@@ -1,0 +1,6 @@
+*
+!.gitignore
+!init.el
+!conf.org
+!README.org
+!COPYING

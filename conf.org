@@ -1,0 +1,640 @@
+# -*- mode: org -*-
+# -*- coding: utf-8 -*-
+#+TITLE: Emacs Configuration
+#+AUTHOR: Xinan Liu
+
+** Introduction
+
+This is my personal Emacs config written in Org.
+
+Writting Emacs config in Org keeps the config file tidy and organized. It also
+allows literate programming which makes it very readable and thus good for
+beginners who wants to learn how to configure Emacs.
+
+It is a very minimal and generic config. I occasionally add or remove language
+supports from it.
+
+This should work on both Linux and macOS. It might not work on Windows.
+
+It automatically installs missing packages and updates existing ones during
+startup. Therefore, to use it, just clone the repository into your home
+directory and make sure that you don't have a =~/.emacs= file.
+#+BEGIN_SRC sh
+git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
+[ -f ~/.emacs ] && mv ~/.emacs ~/.emacs.bak
+#+END_SRC
+
+
+** Configuration
+
+*** Package Management
+**** Selected Packages
+
+     + Initialize package.el
+
+       This must be done first for any package related operation to work.
+       #+BEGIN_SRC emacs-lisp
+         (package-initialize)
+       #+END_SRC
+
+     + Load selected packages from =Customize= if it exists
+
+       Use a different =custom-file= so that =init.el= does not get polluted by
+       Emacs. This =custom-file= is only for Emacs' auto-generated
+       =package-selected-packages=, so there's no need to check it into git.
+       #+BEGIN_SRC emacs-lisp
+         (setq custom-file (concat user-emacs-directory "custom.el"))
+         (when (file-exists-p custom-file)
+           (load custom-file))
+       #+END_SRC
+
+**** Package Archives
+
+     + Set package archives
+
+       The melpa archive contains most of the community packages that the
+       default gnu does not contain. There is also =melpa-stable= archive but I
+       am using the *unstable* "bleeding-edge" version because many packages in
+       =melpa-stable= are too old and lacking features.
+       #+BEGIN_SRC emacs-lisp
+         (setq package-archives
+               '(("melpa" . "https://melpa.org/packages/")
+                 ("gnu" . "https://elpa.gnu.org/packages/")))
+       #+END_SRC
+
+     + Set archive priorities
+
+       By default =package.el= chooses the archive that has the highest version
+       if a desired package exists in multiple archives. We can override this
+       by setting the archive priorities.
+       #+BEGIN_SRC emacs-lisp
+         (setq package-archive-priorities
+               '(("melpa" . 20)
+                 ("gnu" . 10)))
+       #+END_SRC
+
+       Then we can hide the low priority packages to reduce the clutter on the
+       package menu.
+       #+BEGIN_SRC emacs-lisp
+         (setq package-menu-hide-low-priority t)
+       #+END_SRC
+
+     + Auto install missing packages
+
+       This ensures that all packages in ~package-selected-packages~ are
+       installed.
+       #+BEGIN_SRC emacs-lisp
+         (unless package-archive-contents
+           (package-refresh-contents))
+         (package-install-selected-packages)
+       #+END_SRC
+
+     + use-package
+
+       We use =use-package= to organize configs for each packages.
+       By setting ~use-package-always-ensure~ to ~t~, =use-package= will
+       install missing packages too.
+       #+BEGIN_SRC emacs-lisp
+         (unless (package-installed-p 'use-package)
+           (package-install 'use-package))
+         (setq use-package-always-ensure t)
+       #+END_SRC
+
+       Use delight to hide mode names from the mode-line.
+       #+BEGIN_SRC emacs-lisp
+         (use-package delight
+           :config
+           (delight '((auto-revert-mode nil "autorevert"))))
+       #+END_SRC
+
+     + Auto update packages and remove unused dependencies
+
+       Use =auto-package-update= to automatically update packages. Then we call
+       ~(package-autoremove)~ to automatically remove unused dependencies.
+       ~(package-autoremove)~ relies on ~package-selected-packages~ to tell
+       which packages are user-installed packages and which are dependencies.
+       #+BEGIN_SRC emacs-lisp
+         (use-package auto-package-update
+           :config
+           (setq auto-package-update-delete-old-versions t)
+           (setq auto-package-update-hide-results t)
+           (auto-package-update-maybe)
+           (package-autoremove))
+       #+END_SRC
+
+
+*** Appearance
+**** Window / Frame
+
+      Get rid of rarely used GUI elements.
+
+     + Disable startup buffer and screen
+
+       Get rid of the annoying startup buffer and splash screen.
+       #+BEGIN_SRC emacs-lisp
+         (setq inhibit-startup-buffer-menu t
+               inhibit-startup-screen t)
+       #+END_SRC
+
+     + Disable scroll-bar and tool-bar
+
+       We are power keyboard users. We do not need tool bars or scroll bars.
+       #+BEGIN_SRC emacs-lisp
+         (tool-bar-mode 0)
+         (setq default-frame-alist '((vertical-scroll-bars . nil)))
+       #+END_SRC
+
+     + Disable menu-bar if not on macOS
+
+       However, I prefer to have menu bar on on macOS. There are 2 reasons:
+       1. The menu bar on macOS does not take up space in the window as it is
+          on the system menu bar on the top of the desktop.
+       2. It is weird for a Mac app to not have any menu settings on top. That
+          is usually the case for a sluggish java app.
+       #+BEGIN_SRC emacs-lisp
+         (unless (eq system-type 'darwin)
+           (menu-bar-mode 0))
+       #+END_SRC
+
+     + Do not blink cursor
+
+       Blinking cursor could be annoying in a laggy ssh session.
+       #+BEGIN_SRC emacs-lisp
+         (blink-cursor-mode 0)
+       #+END_SRC
+
+**** Theme
+
+     + Solarized Light
+
+       I prefer =color-theme-solarized= package over the more popular
+       =solarized-theme= because =solarized-theme= has incorrect colors in
+       terminal.
+       #+BEGIN_SRC emacs-lisp
+         (use-package color-theme-solarized
+           :init
+           (setq frame-background-mode 'light)
+           :config
+           (load-theme 'solarized t))
+       #+END_SRC
+
+**** Font
+
+      Font setting only works in GUI mode.
+
+     + Use Ubuntu Mono
+
+       I would prefer fonts with ligatures but unfortunatelly ligatures do not
+       work well on Emacs. Macs usually has higher resolutions than the Linux
+       machines that I use at work. So I set a slightly larger font size on
+       macOS.
+       #+BEGIN_SRC emacs-lisp
+         (if (eq system-type 'darwin)
+             (add-to-list 'default-frame-alist '(font . "Ubuntu Mono 16"))
+           (add-to-list 'default-frame-alist '(font . "Ubuntu Mono 14")))
+       #+END_SRC
+
+**** Fringe & Mode-Line
+
+     + Turn on relative line numbers globally
+
+       Line numbers are essential for +debugging+ programming. I prefer
+       relative line numbers as they tell you the number of lines you need to
+       jump to get to a certain line.
+       #+BEGIN_SRC emacs-lisp
+         (setq display-line-numbers-type 'relative)
+         (global-display-line-numbers-mode t)
+       #+END_SRC
+
+     + Turn on column numbers on mode-line
+
+       Column numbers are nice for debugging too.
+       #+BEGIN_SRC emacs-lisp
+         (column-number-mode t)
+       #+END_SRC
+
+
+*** General
+**** Helm
+
+      =Helm= is a powerful incremental completion framework that you can use in
+      almost everywhere of Emacs.
+
+     + Use helm with starter settings
+
+       Bind commonly used commands to the helm variant.
+       #+BEGIN_SRC emacs-lisp
+         (use-package helm
+           :delight
+           :bind (([remap find-file] . helm-find-files)
+                  ([remap occur] . helm-occur)
+                  ([remap list-buffers] . helm-buffers-list)
+                  ([remap execute-extended-command] . helm-M-x)
+                  ([remap yank-pop] . helm-show-kill-ring)
+                  ([remap switch-to-buffer] . helm-mini)
+                  :map helm-map
+                  ("<tab>" . 'helm-execute-persistent-action)
+                  ("C-i" . 'helm-execute-persistent-action)
+                  ("C-z" . 'helm-select-action))
+           :custom
+           (helm-M-x-fuzzy-match t)
+           :config
+           (unless (boundp 'completion-in-region-function)
+             (define-key lisp-interaction-mode-map [remap completion-at-point] 'helm-lisp-completion-at-point)
+             (define-key emacs-lisp-mode-map       [remap completion-at-point] 'helm-lisp-completion-at-point))
+           (require 'helm-config)
+           (helm-autoresize-mode t)
+           (helm-mode t))
+       #+END_SRC
+
+**** Project Management
+
+     + Projectile
+
+       #+BEGIN_SRC emacs-lisp
+         (use-package projectile
+           :delight '(:eval (concat " <" (projectile-project-name) ">"))
+           :bind-keymap ("C-x p" . projectile-command-map)
+           :config
+           (projectile-mode t))
+       #+END_SRC
+
+     + Helm Projectile
+
+       #+BEGIN_SRC emacs-lisp
+         (use-package helm-projectile
+           :config
+           (helm-projectile-on)
+           (setq projectile-completion-system 'helm))
+       #+END_SRC
+
+     + Bazel
+
+       Basic Bazel support for Emacs.
+       #+BEGIN_SRC emacs-lisp
+         (defun buildifier-hook ()
+           (when (executable-find "buildifier")
+             (add-hook 'before-save-hook 'bazel-format nil t)))
+         (use-package bazel-mode
+           :if (executable-find "bazel")
+           :mode "BUILD\\'"
+           :init
+           (add-hook 'bazel-mode-hook 'buildifier-hook))
+       #+END_SRC
+
+       Register Bazel project type with Projectile
+       #+BEGIN_SRC emacs-lisp
+         (projectile-register-project-type
+          'bazel '("WORKSPACE")
+          :compile "bazel build "
+          :test "bazel test "
+          :run "bazel run ")
+       #+END_SRC
+
+**** Kill Ring
+
+      Kill ring is the "clipboard" is you wonder what it is.
+
+     + Do not save duplicates on kill ring
+
+       Duplicates are annoying when you cycle the kill ring.
+       #+BEGIN_SRC emacs-lisp
+         (setq kill-do-not-save-duplicates t)
+       #+END_SRC
+
+     + Save interprogram clipboard before killing
+
+       Killing in Emacs actually saves the killed content to the system
+       clipboard too, in addition to the Emacs kill ring. To prevent
+       irrevocally overwriting the system clipboard, we ask Emacs to save the
+       system clipboard content into the kill ring before replacing it.
+       #+BEGIN_SRC emacs-lisp
+         (setq save-interprogram-paste-before-kill t)
+       #+END_SRC
+
+**** Undo
+
+     + Set undo limit to 65536
+
+       Greater undo limit allows you to undo more operations, at the cost of
+       higher memory consumption.
+       #+BEGIN_SRC emacs-lisp
+         (setq undo-limit 65536)
+       #+END_SRC
+
+**** Auto Save
+
+     + Change auto save and backup path to /tmp
+
+       By default, Emacs saves =filename\~= backup file and =#filename#=
+       auto-save files in the same directory as the edited file, which could be
+       annoying. I prefer saving them all in =/tmp/=.
+       #+BEGIN_SRC emacs-lisp
+         (setq auto-save-file-name-transforms '((".*" "/tmp/" t)))
+         (setq backup-directory-alist '((".*" . "/tmp")))
+       #+END_SRC
+
+**** Encoding
+
+     + UTF-8
+
+       Set UTF-8 as the default encoding.
+       #+BEGIN_SRC emacs-lisp
+         (set-language-environment "UTF-8")
+       #+END_SRC
+
+**** Compilation
+
+     + Flycheck
+
+       Flycheck checks your syntax on the fly.
+       #+BEGIN_SRC emacs-lisp
+         (use-package flycheck
+           :init (global-flycheck-mode))
+       #+END_SRC
+
+     + Truncate compilation buffer
+
+       This will limit the compilation buffer size to
+       =comint-buffer-maximum-size=, which defaults to 1024 lines.
+       #+BEGIN_SRC emacs-lisp
+         (add-hook 'compilation-filter-hook 'comint-truncate-buffer)
+       #+END_SRC
+
+**** Miscellaneous
+
+     + Yes or No
+
+       Replace yes or no questions with y or n.
+       #+BEGIN_SRC emacs-lisp
+         (fset 'yes-or-no-p 'y-or-n-p)
+       #+END_SRC
+
+
+*** Editing
+**** Indentation
+
+     + Set default indentation to be 2 spaces
+
+       #+BEGIN_SRC emacs-lisp
+         (setq-default indent-tabs-mode nil
+                       tab-stop-list nil
+                       tab-width 2)
+         (defvaralias 'c-basic-offset 'tab-width)
+       #+END_SRC
+
+     + Infer indentation style if possible
+
+       #+BEGIN_SRC emacs-lisp
+         (use-package dtrt-indent
+           :delight " di"
+           :hook (prog-mode . dtrt-indent-mode))
+       #+END_SRC
+
+     + Electric layout
+
+       Automatically insert a newline before some closing parenthesis, and
+       indent to the next level.
+       #+BEGIN_SRC emacs-lisp
+         (electric-layout-mode t)
+       #+END_SRC
+
+**** Parenthesis
+
+     + Electric pair and show parens
+
+       Automatically insert closing brackets.
+       #+BEGIN_SRC emacs-lisp
+         (electric-pair-mode t)
+       #+END_SRC
+
+       Show matching parenthesis and ring bell on mismatch
+       #+BEGIN_SRC emacs-lisp
+         (setq show-paren-ring-bell-on-mismatch t)
+         (show-paren-mode t)
+       #+END_SRC
+
+     + Turn on rainbow delimiters on all prog modes
+
+       /I can sing a rainbow, sing a rainbow, sing a rainbow too./
+       #+BEGIN_SRC emacs-lisp
+         (use-package rainbow-delimiters
+           :init
+           (require 'org)
+           :hook (prog-mode . rainbow-delimiters-mode))
+       #+END_SRC
+
+**** Fill Column
+
+     + Fill column and auto fill
+
+       Set fill column to 80 and turn on auto fill for =text-mode= and
+       =org-mode= so that Emacs automatically break lines at =fill-column=.
+       #+BEGIN_SRC emacs-lisp
+         (setq fill-column 80)
+         (add-hook 'text-mode-hook 'turn-on-auto-fill)
+         (add-hook 'org-mode-hook 'turn-on-auto-fill)
+       #+END_SRC
+
+     + Fill column indicator
+
+       Draws a vertical line at =fill-column= for your reference.
+       #+BEGIN_SRC emacs-lisp
+         (use-package fill-column-indicator
+           :hook ((prog-mode org-mode text-mode) . fci-mode))
+       #+END_SRC
+
+**** Cursors
+
+     + Multiple cursors
+
+       Use multiple-cursors and bind some keys.
+       #+BEGIN_SRC emacs-lisp
+         (use-package multiple-cursors
+           :bind (("C-c >" . mc/mark-next-like-this)
+                  ("C-c <" . mc/mark-previous-like-this)
+                  ("C-c a" . mc/mark-all-like-this)))
+       #+END_SRC
+
+     + Smarter Control-A
+
+       Make C-a cycle through the "start of line" and the "indentation point".
+       #+BEGIN_SRC emacs-lisp
+         (defun smarter-move-beginning-of-line (arg)
+           (interactive "^p")
+           (setq arg (or arg 1))
+
+           (when (/= arg 1)
+             (let ((line-move-visual nil))
+               (forward-line (1- arg))))
+
+           (let ((orig-point (point)))
+             (back-to-indentation)
+             (when (= orig-point (point))
+               (move-beginning-of-line 1))))
+
+         (global-set-key [remap move-beginning-of-line]
+                         'smarter-move-beginning-of-line)
+       #+END_SRC
+
+     + Delete selection mode
+
+       Typing replaces the current selection instead of inserting at
+       mark.
+       #+BEGIN_SRC emacs-lisp
+         (delete-selection-mode t)
+       #+END_SRC
+
+**** Whitespace
+
+     + Remove trailing whitespace and blank lines when saving
+
+       When ~delete-trailing-lines~ is non-nil, calling
+       ~delete-trailing-whitespace~ on the entire buffer deletes
+       trailing blank lines too.
+       #+BEGIN_SRC emacs-lisp
+         (setq delete-trailing-lines t)
+         (add-hook 'before-save-hook 'delete-trailing-whitespace)
+       #+END_SRC
+
+**** Auto Complete
+
+     + Company
+
+       Turn =company= on globally.
+       #+BEGIN_SRC emacs-lisp
+         (use-package company
+           :delight
+           :bind (:map company-active-map
+                       ("<tab>" . company-complete-selection))
+           :init
+           (global-company-mode))
+       #+END_SRC
+
+       Company does not work quite well with Fill Column
+       Indicator. Here is a workaround.
+       #+BEGIN_SRC emacs-lisp
+         (defun company-turn-off-fci-mode (&rest ignore)
+           (turn-off-fci-mode))
+         (defun company-turn-on-fci-mode (&rest ignore)
+           (turn-on-fci-mode))
+
+         (add-hook 'company-completion-started-hook
+                   'company-turn-off-fci-mode)
+         (add-hook 'company-completion-finished-hook
+                   'company-turn-on-fci-mode)
+         (add-hook 'company-completion-cancelled-hook
+                   'company-turn-on-fci-mode)
+       #+END_SRC
+
+**** Comments
+
+     + Inline comments
+
+       Make inline comments 2 spaces away from end of line.
+       #+BEGIN_SRC emacs-lisp
+         (setq comment-inline-offset 2)
+       #+END_SRC
+
+**** Spell Check
+
+     + Flyspell
+
+       Turn on on-the-fly spell checking for all text modes, as well
+       as comments and strings in source codes.
+       Prefer =aspell= if available.
+       #+BEGIN_SRC emacs-lisp
+         (use-package flyspell
+           :if (or (executable-find "aspell") (executable-find "ispell"))
+           :config
+           (when (executable-find "aspell")
+               (setq ispell-program-name "aspell")
+               (setq ispell-list-command "--list"))
+           (add-hook 'text-mode-hook 'turn-on-flyspell)
+           (add-hook 'prog-mode-hook 'flyspell-prog-mode))
+       #+END_SRC
+
+
+*** Languages
+**** Common Lisp
+
+     + SLIME
+
+       The Superior Lisp Interaction Mode for Emacs. 'Nuff said.
+       #+BEGIN_SRC emacs-lisp
+         (use-package slime
+           :if (executable-find "sbcl")
+           :config
+           (setq inferior-lisp-program "sbcl")
+           (setq slime-contribs '(slime-fancy)))
+       #+END_SRC
+
+       Use =slime-company= for auto complete
+       #+BEGIN_SRC emacs-lisp
+         (use-package slime-company
+           :requires slime
+           :defer t  ; Must defer loading and wait for slime-setup.
+           :init
+           (add-to-list 'slime-contribs 'slime-company))
+       #+END_SRC
+
+**** C / C++
+     + Compile
+
+       Bind =C-c C-c= to ~compile~
+       #+BEGIN_SRC emacs-lisp
+         (add-hook 'c-mode-common-hook
+                   (lambda ()
+                     (local-set-key (kbd "C-c C-c") 'compile)))
+       #+END_SRC
+
+
+*** VCS
+**** Magit
+
+      A magical git interface in Emacs.
+
+     + Use Magit and turn on global magit file mode
+
+       #+BEGIN_SRC emacs-lisp
+         (use-package magit
+           :bind (("C-x g" . magit-status))
+           :custom (global-magit-file-mode t))
+       #+END_SRC
+
+**** Git Gutter
+
+     + Use git-gutter-fringe and turn on global-git-gutter-mode
+
+       #+BEGIN_SRC emacs-lisp
+         (use-package git-gutter-fringe
+           :if window-system
+           :delight git-gutter-mode
+           :custom (git-gutter-fr:side 'right-fringe)
+           :config
+           (global-git-gutter-mode t))
+       #+END_SRC
+
+**** Misc
+
+     + Do not ask for visiting symlink to a file under version control
+
+       #+BEGIN_SRC emacs-lisp
+         (setq vc-follow-symlinks t)
+       #+END_SRC
+
+
+*** OS Specific
+**** macOS
+
+     + Bind "Command" key to "Meta"
+
+       This prevents accidental =Command-W= and also reduces the distance that
+       your thumb need to move.
+       #+BEGIN_SRC emacs-lisp
+         (setq ns-command-modifier 'meta)
+       #+END_SRC
+
+
+** Copyright
+Copyright @ 2018 Xinan Liu. Released under [[COPYING][GNU GPLv3]].
