@@ -588,6 +588,15 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
                      (local-set-key (kbd "C-c C-c") 'compile)))
        #+END_SRC
 
+     + Code Style
+
+       Use Google style guide
+       #+BEGIN_SRC emacs-lisp
+         (use-package google-c-style
+           :config
+           (add-hook 'c-mode-common-hook 'google-set-c-style)
+           (add-hook 'c-mode-common-hook 'google-make-newline-indent))
+       #+END_SRC
 
 *** VCS
 **** Magit
