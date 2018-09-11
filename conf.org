@@ -604,17 +604,10 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
            :config
            (when (executable-find "aspell")
                (setq ispell-program-name "aspell")
-               (setq ispell-list-command "--list")))
-       #+END_SRC
-
-     + Flyspell Faces
-
-       Change faces to make it look less like an syntax error.
-       #+BEGIN_SRC emacs-lisp
-         (set-face-underline 'flyspell-incorrect
-                             '(:color "brown" :style wave))
-         (set-face-underline 'flyspell-duplicate
-                             '(:color "grey" :style wave))
+               (setq ispell-list-command "--list"))
+           :custom-face
+           (flyspell-incorrect ((t (:underline (:color "brown" :style wave)))))
+           (flyspell-duplicate ((t (:underline (:color "grep" :style wave))))))
        #+END_SRC
 
 
