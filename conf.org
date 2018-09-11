@@ -298,7 +298,7 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
        EDE stands for Emacs Development Environment
        #+BEGIN_SRC emacs-lisp
          (global-ede-mode t)
-         (let ((projects-file (concat user-emacs-directory "ede-projects.el")))
+         (let ((projects-file (concat user-emacs-directory "projects.el")))
            (when (file-exists-p projects-file)
            (load-file projects-file)))
        #+END_SRC
@@ -485,7 +485,7 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
        Set fill column to 80 and turn on auto fill for =text-mode= and
        =org-mode= so that Emacs automatically break lines at =fill-column=.
        #+BEGIN_SRC emacs-lisp
-         (setq fill-column 80)
+         (setq-default fill-column 100)
          (add-hook 'text-mode-hook 'turn-on-auto-fill)
          (add-hook 'org-mode-hook 'turn-on-auto-fill)
        #+END_SRC
