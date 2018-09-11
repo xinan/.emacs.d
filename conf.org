@@ -280,8 +280,7 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
          (use-package bazel-mode
            :if (executable-find "bazel")
            :mode "BUILD\\'"
-           :init
-           (add-hook 'bazel-mode-hook 'buildifier-hook))
+           :hook (bazel-mode . buildifier-hook))
        #+END_SRC
 
        Register Bazel project type with Projectile
@@ -600,12 +599,12 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
        #+BEGIN_SRC emacs-lisp
          (use-package flyspell
            :if (or (executable-find "aspell") (executable-find "ispell"))
+           :hook ((text-mode-hook . turn-on-flyspell)
+                  (prog-mode-hook . flyspell-prog-mode))
            :config
            (when (executable-find "aspell")
                (setq ispell-program-name "aspell")
-               (setq ispell-list-command "--list"))
-           (add-hook 'text-mode-hook 'turn-on-flyspell)
-           (add-hook 'prog-mode-hook 'flyspell-prog-mode))
+               (setq ispell-list-command "--list")))
        #+END_SRC
 
      + Flyspell Faces
@@ -648,9 +647,7 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
 
        Bind =C-c C-c= to ~compile~
        #+BEGIN_SRC emacs-lisp
-         (add-hook 'c-mode-common-hook
-                   (lambda ()
-                     (local-set-key (kbd "C-c C-c") 'compile)))
+         (global-set-key (kbd "C-c C-c") 'projectile-compile-project)
        #+END_SRC
 
      + Code Style
@@ -658,9 +655,8 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
        Use Google style guide
        #+BEGIN_SRC emacs-lisp
          (use-package google-c-style
-           :config
-           (add-hook 'c-mode-common-hook 'google-set-c-style)
-           (add-hook 'c-mode-common-hook 'google-make-newline-indent))
+           :hook ((c-mode-common . google-set-c-style)
+                  (c-mode-common . google-make-newline-indent)))
        #+END_SRC
 
      + GNU Global
@@ -670,6 +666,18 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
          (when (cedet-gnu-global-version-check)
            (semanticdb-enable-gnu-global-databases 'c-mode)
            (semanticdb-enable-gnu-global-databases 'c++-mode))
+       #+END_SRC
+
+       =helm-gtags=
+       #+BEGIN_SRC emacs-lisp
+         (use-package helm-gtags
+           :hook ((c-mode-common asm-mode) . helm-gtags-mode)
+           :bind (:map helm-gtags-mode-map
+                       ("C-c g g" . helm-gtags-dwim)
+                       ("C-c g f" . helm-gtags-next-history)
+                       ("C-c g b" . helm-gtags-previous-history))
+           :custom
+           (helm-gtags-auto-update t))
        #+END_SRC
 
 
