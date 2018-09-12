@@ -358,14 +358,6 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
 
      Collection of Emacs Development Environment Tools.
 
-     + CEDET Global & SRecode
-
-     #+BEGIN_SRC emacs-lisp
-       (require 'cedet-global)
-       (require 'srecode)
-       (global-srecode-minor-mode 1)
-     #+END_SRC
-
      + Semantic
 
        Enable every useful Semantic submode and turn on Semantic.
@@ -374,9 +366,7 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
                '(global-semanticdb-minor-mode
                  global-semantic-mru-bookmark-mode
                  global-semantic-highlight-func-mode
-                 global-semantic-stickyfunc-mode
-                 global-semantic-idle-scheduler-mode
-                 global-semantic-idle-completions-mode))
+                 global-semantic-stickyfunc-mode))
          (semantic-mode t)
        #+END_SRC
 
@@ -412,6 +402,16 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
        =comint-buffer-maximum-size=, which defaults to 1024 lines.
        #+BEGIN_SRC emacs-lisp
          (add-hook 'compilation-filter-hook 'comint-truncate-buffer)
+       #+END_SRC
+
+     + ANSI colors in compilation mode
+
+       #+BEGIN_SRC emacs-lisp
+         (use-package ansi-color
+           :config
+           (add-hook 'compilation-filter-hook
+                     (lambda ()
+                       (ansi-color-apply-on-region compilation-filter-start (point)))))
        #+END_SRC
 
 **** Miscellaneous
@@ -561,7 +561,12 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
            :bind (:map company-active-map
                        ("<tab>" . company-complete-selection))
            :init
-           (global-company-mode))
+           (global-company-mode)
+           :custom
+           (company-backends '(company-semantic
+                               company-files
+                               (company-dabbrev-code company-keywords)
+                               company-dabbrev)))
        #+END_SRC
 
        Company does not work quite well with Fill Column
@@ -650,27 +655,6 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
          (use-package google-c-style
            :hook ((c-mode-common . google-set-c-style)
                   (c-mode-common . google-make-newline-indent)))
-       #+END_SRC
-
-     + GNU Global
-
-       Enable support for GNU Global if a compatible version is found.
-       #+BEGIN_SRC emacs-lisp
-         (when (cedet-gnu-global-version-check)
-           (semanticdb-enable-gnu-global-databases 'c-mode)
-           (semanticdb-enable-gnu-global-databases 'c++-mode))
-       #+END_SRC
-
-       =helm-gtags=
-       #+BEGIN_SRC emacs-lisp
-         (use-package helm-gtags
-           :hook ((c-mode-common asm-mode) . helm-gtags-mode)
-           :bind (:map helm-gtags-mode-map
-                       ("C-c g g" . helm-gtags-dwim)
-                       ("C-c g f" . helm-gtags-next-history)
-                       ("C-c g b" . helm-gtags-previous-history))
-           :custom
-           (helm-gtags-auto-update t))
        #+END_SRC
 
 
