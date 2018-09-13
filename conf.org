@@ -292,16 +292,6 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
           :run "bazel run ")
        #+END_SRC
 
-     + EDE
-
-       EDE stands for Emacs Development Environment
-       #+BEGIN_SRC emacs-lisp
-         (global-ede-mode t)
-         (let ((projects-file (concat user-emacs-directory "projects.el")))
-           (when (file-exists-p projects-file)
-           (load-file projects-file)))
-       #+END_SRC
-
 **** Kill Ring
 
       Kill ring is the "clipboard" is you wonder what it is.
@@ -360,40 +350,26 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
 
      + Semantic
 
-       Enable every useful Semantic submode and turn on Semantic.
+       Enable some useful Semantic submode and turn on Semantic.
        #+BEGIN_SRC emacs-lisp
          (setq semantic-default-submodes
-               '(global-semanticdb-minor-mode
-                 global-semantic-mru-bookmark-mode
-                 global-semantic-highlight-func-mode
+               '(global-semantic-highlight-func-mode
                  global-semantic-stickyfunc-mode))
          (semantic-mode t)
        #+END_SRC
-
-       Enable extra Semantic features.
-       #+BEGIN_SRC emacs-lisp
-         (require 'semantic/ia)
-         (require 'semantic/bovine/gcc)
-       #+END_SRC
-
 
 **** Compilation
 
      + Flycheck
 
-       Flycheck checks your syntax on the fly.
+       Flycheck checks your syntax on the fly. Disable all checkers.
+       We will only use the ycmd checker later.
        #+BEGIN_SRC emacs-lisp
          (use-package flycheck
-           :init (global-flycheck-mode))
-       #+END_SRC
-
-       Set language standard to C++17. Note that we can only do this
-       in =c++-mode=.
-       #+BEGIN_SRC emacs-lisp
-         (add-hook 'c++-mode-hook
-                   (lambda () (setq flycheck-gcc-language-standard "c++17")))
-         (add-hook 'c++-mode-hook
-                   (lambda () (setq flycheck-clang-language-standard "c++17")))
+           :init (global-flycheck-mode)
+           :custom
+           (flycheck-checkers ())
+           (flycheck-check-syntax-automatically '(save new-line mode-enabled)))
        #+END_SRC
 
      + Truncate compilation buffer
@@ -554,7 +530,8 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
 
      + Company
 
-       Turn =company= on globally.
+       Turn =company= on globally. Disable all backends.
+       We will be using the ycmd backend only.
        #+BEGIN_SRC emacs-lisp
          (use-package company
            :delight
@@ -563,10 +540,7 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
            :init
            (global-company-mode)
            :custom
-           (company-backends '(company-semantic
-                               company-files
-                               (company-dabbrev-code company-keywords)
-                               company-dabbrev)))
+           (company-backends ()))
        #+END_SRC
 
        Company does not work quite well with Fill Column
@@ -655,6 +629,24 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
          (use-package google-c-style
            :hook ((c-mode-common . google-set-c-style)
                   (c-mode-common . google-make-newline-indent)))
+       #+END_SRC
+
+     + =ycmd=
+
+       #+BEGIN_SRC emacs-lisp
+         (use-package ycmd
+           :init (require 'ycmd-next-error)
+           :hook ((c-mode-common . ycmd-mode)
+                  (ycmd . ycmd-eldoc-setup))
+           :custom
+           (ycmd-server-command `("python" ,(file-truename "~/.ycmd/ycmd/")))
+           :config
+           (use-package company-ycmd
+             :config
+             (company-ycmd-setup))
+           (use-package flycheck-ycmd
+             :config
+             (flycheck-ycmd-setup)))
        #+END_SRC
 
 
