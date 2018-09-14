@@ -540,7 +540,13 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
            :init
            (global-company-mode)
            :custom
-           (company-backends ()))
+           (company-backends ())
+           (company-idle-delay 0.1)
+           (company-minimum-prefix-length 1)
+           :custom-face
+           (company-tooltip-selection ((t (:background "light green"))))
+           (company-tooltip-common-selection ((t (:background "light green"))))
+           (company-tooltip-annotation-selection ((t (:background "light green")))))
        #+END_SRC
 
        Company does not work quite well with Fill Column
