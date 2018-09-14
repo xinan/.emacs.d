@@ -640,6 +640,7 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
                   (ycmd . ycmd-eldoc-setup))
            :custom
            (ycmd-server-command `("python" ,(file-truename "~/.ycmd/ycmd/")))
+           (ycmd-extra-conf-handler 'load)
            :config
            (use-package company-ycmd
              :config
