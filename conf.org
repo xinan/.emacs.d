@@ -380,6 +380,13 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
          (add-hook 'compilation-filter-hook 'comint-truncate-buffer)
        #+END_SRC
 
+     + Auto scroll compilation buffer
+
+       Automatically scroll the compilation buffer, stop at the first error.
+       #+BEGIN_SRC emacs-lisp
+         (setq compilation-scroll-output 'first-error)
+       #+END_SRC
+
      + ANSI colors in compilation mode
 
        #+BEGIN_SRC emacs-lisp
@@ -541,8 +548,8 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
            (global-company-mode)
            :custom
            (company-backends ())
-           (company-idle-delay 0.1)
-           (company-minimum-prefix-length 1)
+           (company-idle-delay 0.3)
+           (company-minimum-prefix-length 2)
            :custom-face
            (company-tooltip-selection ((t (:background "light green"))))
            (company-tooltip-common-selection ((t (:background "light green"))))
