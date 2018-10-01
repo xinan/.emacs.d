@@ -476,8 +476,8 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
 
        Draws a vertical line at =fill-column= for your reference.
        #+BEGIN_SRC emacs-lisp
-         (use-package fill-column-indicator
-           :hook ((prog-mode org-mode text-mode) . fci-mode))
+         ;; (use-package fill-column-indicator
+         ;;   :hook ((prog-mode org-mode text-mode) . fci-mode))
        #+END_SRC
 
 **** Cursors
@@ -548,7 +548,7 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
            (global-company-mode)
            :custom
            (company-backends ())
-           (company-idle-delay 0.3)
+           (company-idle-delay 0.2)
            (company-minimum-prefix-length 2)
            :custom-face
            (company-tooltip-selection ((t (:background "light green"))))
@@ -559,17 +559,17 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
        Company does not work quite well with Fill Column
        Indicator. Here is a workaround.
        #+BEGIN_SRC emacs-lisp
-         (defun company-turn-off-fci-mode (&rest ignore)
-           (turn-off-fci-mode))
-         (defun company-turn-on-fci-mode (&rest ignore)
-           (turn-on-fci-mode))
+         ;; (defun company-turn-off-fci-mode (&rest ignore)
+         ;;   (turn-off-fci-mode))
+         ;; (defun company-turn-on-fci-mode (&rest ignore)
+         ;;   (turn-on-fci-mode))
 
-         (add-hook 'company-completion-started-hook
-                   'company-turn-off-fci-mode)
-         (add-hook 'company-completion-finished-hook
-                   'company-turn-on-fci-mode)
-         (add-hook 'company-completion-cancelled-hook
-                   'company-turn-on-fci-mode)
+         ;; (add-hook 'company-completion-started-hook
+         ;;           'company-turn-off-fci-mode)
+         ;; (add-hook 'company-completion-finished-hook
+         ;;           'company-turn-on-fci-mode)
+         ;; (add-hook 'company-completion-cancelled-hook
+         ;;           'company-turn-on-fci-mode)
        #+END_SRC
 
 **** Comments
