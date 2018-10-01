@@ -59,6 +59,7 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
        #+BEGIN_SRC emacs-lisp
          (setq package-archives
                '(("melpa" . "https://melpa.org/packages/")
+                 ("melpa-stable" . "https://stable.melpa.org/packages/")
                  ("gnu" . "https://elpa.gnu.org/packages/")))
        #+END_SRC
 
@@ -70,7 +71,8 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
        #+BEGIN_SRC emacs-lisp
          (setq package-archive-priorities
                '(("melpa" . 20)
-                 ("gnu" . 10)))
+                 ("gnu" . 10)
+                 ("melpa-stable" . 0)))
        #+END_SRC
 
        Then we can hide the low priority packages to reduce the clutter on the
@@ -255,6 +257,8 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
 
        #+BEGIN_SRC emacs-lisp
          (use-package projectile
+           :ensure t
+           :pin melpa-stable
            :delight '(:eval (concat " <" (projectile-project-name) ">"))
            :bind-keymap ("C-x p" . projectile-command-map)
            :config
