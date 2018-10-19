@@ -1,5 +1,6 @@
 # -*- mode: org -*-
 # -*- coding: utf-8 -*-
+# -*- lexical-binding: t -*-
 #+TITLE: Emacs Configuration
 #+AUTHOR: Xinan Liu
 
@@ -289,8 +290,7 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
 
        Register Bazel project type with Projectile
        #+BEGIN_SRC emacs-lisp
-         (projectile-register-project-type
-          'bazel '("WORKSPACE")
+         (projectile-register-project-type 'bazel '("WORKSPACE")
           :compile "bazel build "
           :test "bazel test "
           :run "bazel run ")
@@ -356,10 +356,16 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
 
        Enable some useful Semantic submode and turn on Semantic.
        #+BEGIN_SRC emacs-lisp
-         (setq semantic-default-submodes
-               '(global-semantic-highlight-func-mode
-                 global-semantic-stickyfunc-mode))
-         (semantic-mode t)
+         (use-package semantic
+           :custom
+           (semantic-default-submodes '(global-semanticdb-minor-mode
+                                        global-semantic-highlight-func-mode
+                                        global-semantic-stickyfunc-mode
+                                        global-semantic-idle-scheduler-mode))
+           :config
+           (semantic-mode t)
+           :custom-face
+           (semantic-idle-symbol-highlight ((t (:background "pale green")))))
        #+END_SRC
 
 **** Compilation
@@ -431,13 +437,13 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
            :hook (prog-mode . dtrt-indent-mode))
        #+END_SRC
 
-     + Electric layout
+     # + Electric layout
 
-       Automatically insert a newline before some closing parenthesis, and
-       indent to the next level.
-       #+BEGIN_SRC emacs-lisp
-         (electric-layout-mode t)
-       #+END_SRC
+     #   Automatically insert a newline before some closing parenthesis, and
+     #   indent to the next level.
+     #   #+BEGIN_SRC emacs-lisp
+     #     (electric-layout-mode t)
+     #   #+END_SRC
 
 **** Parenthesis
 
@@ -607,6 +613,7 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
        #+END_SRC
 
 
+
 *** Languages
 **** Common Lisp
 
@@ -654,7 +661,8 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
          (use-package ycmd
            :init (require 'ycmd-next-error)
            :hook ((c-mode-common . ycmd-mode)
-                  (ycmd . ycmd-eldoc-setup))
+                  (go-mode . ycmd-mode)
+                  (ycmd-mode . ycmd-eldoc-setup))
            :custom
            (ycmd-server-command `("python" ,(file-truename "~/.ycmd/ycmd/")))
            (ycmd-extra-conf-handler 'load)
@@ -665,6 +673,44 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
            (use-package flycheck-ycmd
              :config
              (flycheck-ycmd-setup)))
+       #+END_SRC
+
+**** YAML
+
+     + YAML Mode
+
+       Use =yaml-mode=
+       #+BEGIN_SRC emacs-lisp
+         (use-package yaml-mode
+           :mode "\\.yml\\'"
+           :hook (yaml-mode . (lambda () (define-key yaml-mode-map "\C-m" 'newline-and-indent))))
+       #+END_SRC
+
+**** Golang
+
+     + =go-mode=
+       #+BEGIN_SRC emacs-lisp
+         (use-package go-mode
+           :hook (before-save . gofmt-before-save)
+           :bind (:map go-mode-map
+                  ("C-c C-j" . godef-jump)
+                  ("C-c C-k" . pop-tag-mark)
+                  ("C-c C-d" . godef-describe)))
+       #+END_SRC
+
+     + =go-projectile=
+       #+BEGIN_SRC emacs-lisp
+         (use-package go-projectile)
+       #+END_SRC
+
+**** JavaScript
+
+     + =js2-mode=
+       #+BEGIN_SRC emacs-lisp
+         (use-package js2-mode
+           :mode "\\.js\\'"
+           :config
+           (add-to-list 'interpreter-mode-alist '("node" . js2-mode)))
        #+END_SRC
 
 
