@@ -208,7 +208,10 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
        jump to get to a certain line.
        #+BEGIN_SRC emacs-lisp
          (setq display-line-numbers-type 'relative)
-         (global-display-line-numbers-mode t)
+         (if (version<= emacs-version "26.0.50")
+             (global-linum-mode t)
+           (global-display-line-numbers-mode t))
+
        #+END_SRC
 
      + Turn on column numbers on mode-line
