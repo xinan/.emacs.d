@@ -419,6 +419,12 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
          (fset 'yes-or-no-p 'y-or-n-p)
        #+END_SRC
 
+     + Mouse Mode on Terminal
+
+       #+BEGIN_SRC emacs-lisp
+         (xterm-mouse-mode t)
+       #+END_SRC
+
 
 *** Editing
 **** Indentation
