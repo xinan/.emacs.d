@@ -84,9 +84,11 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
        By setting ~use-package-always-ensure~ to ~t~, =use-package= will
        automatically install missing packages.
        #+BEGIN_SRC emacs-lisp
-         (unless (package-installed-p 'use-package)
-           (package-install 'use-package))
-         (setq use-package-always-ensure t)
+	 (unless (package-installed-p 'use-package)
+	   (unless package-archive-contents
+	     (package-refresh-contents))
+	   (package-install 'use-package))
+	 (setq use-package-always-ensure t)
        #+END_SRC
 
        Use delight to hide / simplify mode names from the mode-line.
@@ -330,10 +332,11 @@ git clone https://github.com/xinan/.emacs.d.git ~/.emacs.d
        #+BEGIN_SRC emacs-lisp
          (use-package semantic
            :custom
-           (semantic-default-submodes '(global-semanticdb-minor-mode
-                                        global-semantic-highlight-func-mode
-                                        global-semantic-stickyfunc-mode
-                                        global-semantic-idle-scheduler-mode))
+           (semantic-default-submodes
+            '(global-semanticdb-minor-mode
+              global-semantic-highlight-func-mode
+              global-semantic-idle-local-symbol-highlight-mode
+              global-semantic-idle-scheduler-mode))
            :config
            (semantic-mode t)
            :custom-face
